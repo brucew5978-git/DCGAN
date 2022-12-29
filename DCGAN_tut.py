@@ -180,93 +180,96 @@ optimizerGenerator = optim.Adam(netGenerator.parameters(), lr=learningRate, beta
 
 
 #Training
-imgList = []
-generatorLoss = []
-discriminatorLoss = []
-iterations = 0
 
-print("Starting Training")
-
-for tempEpoch in range(epoch):
-    print("-------------------")
-    for i, data in enumerate(dataLoader, 0):
+if __name__ == '__main__':
         
-        #1. Update D network, where D = probability generator generates "real img"
-        #Maximize log(D(x)) + log(1 - D(G(z)))
-        print("""""""""""")
-        netDiscriminator.zero_grad()
-        #Training with all-real batch
-        print("====================")
+    imgList = []
+    generatorLoss = []
+    discriminatorLoss = []
+    iterations = 0
 
-        realCPU = data[0].to(device)
-        batchSize = realCPU.size(0)
-        label = torch.full((batchSize, ), REAL_LABEL, dtype=torch.float, device=device)
-        
-        #Forward pass real batch through D
-        output = netDiscriminator(realCPU).view(-1)
-        errorDiscriminatorReal = criterion(output, label)
-        #Criterion finds gradient
+    print("Starting Training")
 
-        #Dalculates gradient for D in backward pass
-        errorDiscriminatorReal.backward()
-        D_x = output.mean().item()
+    for tempEpoch in range(epoch):
+        print("-------------------")
+        for i, data in enumerate(dataLoader, 0):
+            
+            #1. Update D network, where D = probability generator generates "real img"
+            #Maximize log(D(x)) + log(1 - D(G(z)))
+            print("""""""""""")
+            netDiscriminator.zero_grad()
+            #Training with all-real batch
+            print("====================")
 
+            realCPU = data[0].to(device)
+            batchSize = realCPU.size(0)
+            label = torch.full((batchSize, ), REAL_LABEL, dtype=torch.float, device=device)
+            
+            #Forward pass real batch through D
+            output = netDiscriminator(realCPU).view(-1)
+            errorDiscriminatorReal = criterion(output, label)
+            #Criterion finds gradient
 
-        #Train with all fake batches
-
-        #Generate noise/latent vectors
-        noise = torch.randn(batchSize, zLatent, 1, 1, device=device)
-        #Use Generator to generate fake images 
-        fakeImages = netGenerator(noise)
-
-        label.fill_(FAKE_LABEL)
-        output = netDiscriminator(fakeImages.detach()).view(-1)
-
-        errorDiscriminatorFake = criterion(output, label)
-        errorDiscriminatorFake.backward()
-        D_G_z1 = output.mean().item()
-
-        errorDiscriminator = errorDiscriminatorReal + errorDiscriminatorFake
-        #Update D
-        optimizerDiscriminator.step()
+            #Dalculates gradient for D in backward pass
+            errorDiscriminatorReal.backward()
+            D_x = output.mean().item()
 
 
-        #2. 
+            #Train with all fake batches
 
-        #Fake labels are assumed real for generator training
-        netGenerator.zero_grad()
-        label.fill_(REAL_LABEL)
+            #Generate noise/latent vectors
+            noise = torch.randn(batchSize, zLatent, 1, 1, device=device)
+            #Use Generator to generate fake images 
+            fakeImages = netGenerator(noise)
 
-        #Perform another forward pass of all-fake batch throuhg D
-        output = netDiscriminator(fakeImages).view(-1)
-        errorGenerator = criterion(output, label)
+            label.fill_(FAKE_LABEL)
+            output = netDiscriminator(fakeImages.detach()).view(-1)
 
-        errorGenerator.backward()
-        D_G_z2 = output.mean().item()
-        #Update G
-        optimizerGenerator.step()
+            errorDiscriminatorFake = criterion(output, label)
+            errorDiscriminatorFake.backward()
+            D_G_z1 = output.mean().item()
 
-        #Output training statistics
-        if i % 50 == 0:
-            print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-                  % (epoch, epoch, i, len(dataLoader),
-                     errorDiscriminator.item(), errorGenerator.item(), D_x, D_G_z1, D_G_z2))
-
-        #Save losses for plotting
-        generatorLoss.append(errorGenerator.item())
-        discriminatorLoss.append(errorDiscriminator.item())
-
-        if(iterations % 500 == 0) or ((epoch == epoch-1) and (i == len(dataLoader)-1)):
-            with torch.no_grad():
-                fakeImages = netGenerator(fixedNoise).detach().cpu()
-
-            imgList.append(vutils.make_grid(fakeImages, padding=2, normalize=True))
-
-        iterations+=1
+            errorDiscriminator = errorDiscriminatorReal + errorDiscriminatorFake
+            #Update D
+            optimizerDiscriminator.step()
 
 
-GENERATOR_FILE = "models/generator.pth"
-DISCRIMINATOR_FILE = "models/discriminator.pth"
+            #2. 
 
-torch.save(Generator.state_dict(), GENERATOR_FILE)
-torch.save(Discriminator.state_dict(), DISCRIMINATOR_FILE)
+            #Fake labels are assumed real for generator training
+            netGenerator.zero_grad()
+            label.fill_(REAL_LABEL)
+
+            #Perform another forward pass of all-fake batch throuhg D
+            output = netDiscriminator(fakeImages).view(-1)
+            errorGenerator = criterion(output, label)
+
+            errorGenerator.backward()
+            D_G_z2 = output.mean().item()
+            #Update G
+            optimizerGenerator.step()
+
+            #Output training statistics
+            if i % 50 == 0:
+                print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
+                    % (epoch, epoch, i, len(dataLoader),
+                        errorDiscriminator.item(), errorGenerator.item(), D_x, D_G_z1, D_G_z2))
+
+            #Save losses for plotting
+            generatorLoss.append(errorGenerator.item())
+            discriminatorLoss.append(errorDiscriminator.item())
+
+            if(iterations % 500 == 0) or ((epoch == epoch-1) and (i == len(dataLoader)-1)):
+                with torch.no_grad():
+                    fakeImages = netGenerator(fixedNoise).detach().cpu()
+
+                imgList.append(vutils.make_grid(fakeImages, padding=2, normalize=True))
+
+            iterations+=1
+
+
+    GENERATOR_FILE = "models/generator.pth"
+    DISCRIMINATOR_FILE = "models/discriminator.pth"
+
+    torch.save(netGenerator.state_dict(), GENERATOR_FILE)
+    torch.save(netDiscriminator.state_dict(), DISCRIMINATOR_FILE)

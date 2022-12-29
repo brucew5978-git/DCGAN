@@ -1,36 +1,48 @@
-import matplotlib.pyplot as plt
+import torch.nn as nn
 import torch
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
-import numpy as np
+#from google.colab import files
 
-'''plt.plot([1, 2, 3, 4])
-plt.ylabel('some numbers')
-plt.show()'''
-
-fashion = dset.FashionMNIST(root='data')
-
-batchSize = 128
 imageSize = 64
-workers=0
+colorNumber = 3 #nc
+zLatent = 100 #nz
+generatorFeatureMapSize = 64 #ngf
 
-dataroot="data/celeba"
-dataset = dset.ImageFolder(root=dataroot, transform=transforms.Compose([
-    transforms.Resize(imageSize),
-    transforms.CenterCrop(imageSize),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
-    ]))
+class Generator(nn.Module):
+    def __init__(self, numGPU):
+        super(Generator, self).__init__()
+        self.numGPU = numGPU
+        self.main = nn.Sequential(
+            #Latent Z as input
+            nn.ConvTranspose2d(zLatent, generatorFeatureMapSize * 8, 4,1,0, bias=False),
+            nn.BatchNorm2d(generatorFeatureMapSize * 8),
+            nn.ReLU(True),
 
-dataLoader = torch.utils.data.DataLoader(dataset, batch_size=batchSize, shuffle=True, num_workers=workers)
+            # Changing size, featureMap*8 x 4 x 4
+            nn.ConvTranspose2d(generatorFeatureMapSize*8, generatorFeatureMapSize * 4, 4,2,1, bias=False),
+            nn.BatchNorm2d(generatorFeatureMapSize * 4),
+            nn.ReLU(True),
 
-device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
+            # Changing size, featureMap*4 x 8 x 8
+            nn.ConvTranspose2d(generatorFeatureMapSize*4, generatorFeatureMapSize * 2, 4,2,1, bias=False),
+            nn.BatchNorm2d(generatorFeatureMapSize * 2),
+            nn.ReLU(True),         
 
-#Iterates dataLoader and displays select images
-realBatch = next(iter(dataLoader))
+            # Changing size, featureMap*2 x 16 x 16
+            nn.ConvTranspose2d(generatorFeatureMapSize*2, generatorFeatureMapSize, 4,2,1, bias=False),
+            nn.BatchNorm2d(generatorFeatureMapSize),
+            nn.ReLU(True),  
 
-plt.figure(figsize=(8,8))
-plt.axis("off")
-plt.title("Training Images")
-plt.imshow(np.transpose(vutils.make_grid(realBatch[0].to(device)[:64], padding=2, normalize=True).cpu(), (1,2,0)))
+            # Changing size, featureMap x 32 x 32
+            nn.ConvTranspose2d(generatorFeatureMapSize, colorNumber, 4,2,1, bias=False),
+            nn.Tanh()
+
+        )
+
+    def forward(self, input):
+        return self.main(input)
+
+GENERATOR_FILE = "generator.pth"
+
+newGenerator = Generator(numGPU=0)
+torch.save(newGenerator.state_dict(), GENERATOR_FILE)
+#files.download(GENERATOR_FILE)
