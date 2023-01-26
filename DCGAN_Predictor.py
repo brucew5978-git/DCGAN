@@ -2,7 +2,7 @@ import torch
 import torchvision.utils as vutils
 import matplotlib.pyplot as plt
 import numpy as np
-from DCGAN_tut import Generator
+from DCGAN_Train import Generator
 
 
 zLatent = 100
