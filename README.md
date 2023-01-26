@@ -19,4 +19,5 @@ Generator Architecture.png: Generator architecture image (https://pytorch.org/tu
 Due to limited training images and inadequate image labeling, the generator model was not able to achieve convergence. I will address these issues in my upcoming diffusion model project
 
 
-![van_Dyck_Training](https://user-images.githubusercontent.com/83440706/214949878-3b504699-44e1-46e7-af50-dd3e738e2079.png)
+
+<img width="604" alt="vab_Dyck_Training" src="https://user-images.githubusercontent.com/83440706/214950143-96ddbc96-e8f1-46c0-9d9c-58f6bea59652.png">
