@@ -8,4 +8,5 @@ The model for portrait generation can be consists of a generator-discriminator s
 
 ## Files
 DCGAN_Train.py: Building and training the DCGAN model
+
 DCGAN_Predictor.py: Generates new images using trained DCGAN model
