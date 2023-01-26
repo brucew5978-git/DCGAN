@@ -8,8 +8,8 @@ from DCGAN_tut import Generator
 zLatent = 100
 newGenerator = Generator(numGPU=0)
 
-GENERATOR_FILE = "models/generator.pth"
-#DISCRIMINATOR_FILE = "models/discriminator.pth"
+GENERATOR_FILE = "models/generatorVD.pth"
+DISCRIMINATOR_FILE = "models/discriminatorVD.pth"
 newGenerator.load_state_dict(torch.load(GENERATOR_FILE, map_location=torch.device('cpu')))
 newGenerator.eval()
 
