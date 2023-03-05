@@ -274,3 +274,13 @@ if __name__ == '__main__':
 
     torch.save(netGenerator.state_dict(), GENERATOR_FILE)
     torch.save(netDiscriminator.state_dict(), DISCRIMINATOR_FILE)
+
+    plt.figure(figsize=(10,5))
+    plt.title("Generator and Discriminator Loss During Training")
+    plt.plot(generatorLoss,label="Generator")
+    plt.plot(discriminatorLoss,label="Discriminator")
+    plt.xlabel("Iterations")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.show()
+    #Shows progress of training 
