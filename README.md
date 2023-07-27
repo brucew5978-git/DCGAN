@@ -1,5 +1,9 @@
 # van Dyck DCGAN
 
+<p align="center">
+  <img src="https://github.com/brucew5978-git/DCGAN/blob/main/van_Dyck.png" alt="alt text">
+</p>
+
 ## Introduction
 
 Built a DCGAN model to generate new portraits in the style of one of the best 17th Century portrait painters, Anthony van Dyck - otherwise known as van Dyck.
